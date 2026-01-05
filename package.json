@@ -1,0 +1,8 @@
+{
+  "name": "randevum",
+  "version": "1.0.0",
+  "description": "Randevum - Online Randevu Sistemi",
+  "dependencies": {
+    "twilio": "^5.0.0"
+  }
+}

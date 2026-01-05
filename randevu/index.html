@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Randevu Onayı - Randevum</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💈</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #6366f1; --primary-dark: #4f46e5;
+            --success: #10b981; --success-light: #d1fae5;
+            --warning: #f59e0b; --warning-light: #fef3c7;
+            --danger: #ef4444; --danger-light: #fee2e2;
+            --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0;
+            --slate-500: #64748b; --slate-600: #475569; --slate-800: #1e293b;
+            --radius: 12px;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--slate-100); color: var(--slate-800); line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; }
+        .header { background: white; padding: 1rem; text-align: center; border-bottom: 1px solid var(--slate-200); }
+        .logo { font-size: 1.5rem; font-weight: 700; color: var(--slate-800); text-decoration: none; }
+        .main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        .card { background: white; border-radius: var(--radius); padding: 2rem; width: 100%; max-width: 450px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center; }
+        .card-icon { font-size: 4rem; margin-bottom: 1rem; }
+        .card-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .card-subtitle { color: var(--slate-500); margin-bottom: 1.5rem; }
+        .detail-box { background: var(--slate-50); border-radius: var(--radius); padding: 1rem; margin-bottom: 1.5rem; text-align: left; }
+        .detail-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--slate-200); }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { color: var(--slate-500); }
+        .detail-value { font-weight: 600; }
+        .btn { display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 1rem; border: none; border-radius: var(--radius); font-size: 1rem; font-weight: 600; cursor: pointer; margin-bottom: 0.75rem; transition: all 0.2s; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: white; color: var(--danger); border: 2px solid var(--danger); }
+        .btn-danger:hover { background: var(--danger-light); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .status-badge { display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; font-size: 0.9rem; margin-bottom: 1rem; }
+        .status-badge.confirmed { background: var(--success-light); color: #065f46; }
+        .status-badge.cancelled { background: var(--danger-light); color: #991b1b; }
+        .status-badge.expired { background: var(--warning-light); color: #92400e; }
+        .warning-box { background: var(--warning-light); border: 1px solid var(--warning); border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem; font-size: 0.9rem; color: #92400e; }
+        .success-box { background: var(--success-light); border: 1px solid var(--success); border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem; font-size: 0.9rem; color: #065f46; }
+        .error-box { background: var(--danger-light); border: 1px solid var(--danger); border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem; font-size: 0.9rem; color: #991b1b; }
+        .loading { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+        .spinner { width: 40px; height: 40px; border: 3px solid var(--slate-200); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .countdown { font-size: 0.85rem; color: var(--slate-500); margin-top: 1rem; }
+        .add-calendar { display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 1rem; padding: 0.75rem; background: var(--slate-50); border-radius: var(--radius); color: var(--primary); text-decoration: none; font-weight: 500; }
+        .add-calendar:hover { background: var(--slate-100); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="/" class="logo">💈 Randevum</a>
+    </header>
+    
+    <main class="main">
+        <div class="card" id="mainCard">
+            <div class="loading" id="loadingState">
+                <div class="spinner"></div>
+                <p>Randevu yükleniyor...</p>
+            </div>
+            
+            <div id="contentState" style="display: none;">
+                <!-- Content will be loaded here -->
+            </div>
+            
+            <div id="errorState" style="display: none;">
+                <div class="card-icon">❌</div>
+                <h2 class="card-title">Randevu Bulunamadı</h2>
+                <p class="card-subtitle">Bu link geçersiz veya randevu silinmiş olabilir.</p>
+                <a href="/" class="btn btn-success">Ana Sayfaya Dön</a>
+            </div>
+        </div>
+    </main>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="/config.js"></script>
+    <script>
+        let db;
+        let appointment = null;
+        let salon = null;
+        const MONTHS_TR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+        const DAYS_TR = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+        
+        async function init() {
+            if (typeof firebase === 'undefined') { setTimeout(init, 100); return; }
+            firebase.initializeApp(FIREBASE_CONFIG);
+            db = firebase.firestore();
+            
+            // URL'den parametreleri al
+            const params = new URLSearchParams(window.location.search);
+            const appointmentId = params.get('id');
+            const action = params.get('action'); // 'confirm' veya 'cancel'
+            
+            if (!appointmentId) {
+                showError();
+                return;
+            }
+            
+            try {
+                // Randevuyu yükle
+                const aptDoc = await db.collection('appointments').doc(appointmentId).get();
+                
+                if (!aptDoc.exists) {
+                    showError();
+                    return;
+                }
+                
+                appointment = { id: aptDoc.id, ...aptDoc.data() };
+                
+                // Salon bilgilerini yükle
+                if (appointment.salonId) {
+                    const salonDoc = await db.collection('salons').doc(appointment.salonId).get();
+                    if (salonDoc.exists) {
+                        salon = { id: salonDoc.id, ...salonDoc.data() };
+                    }
+                }
+                
+                // Otomatik action varsa işle
+                if (action === 'confirm') {
+                    await confirmAppointment();
+                } else if (action === 'cancel') {
+                    await cancelAppointment();
+                } else {
+                    renderAppointment();
+                }
+                
+            } catch (e) {
+                console.error(e);
+                showError();
+            }
+        }
+        
+        function showError() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+        }
+        
+        function renderAppointment() {
+            document.getElementById('loadingState').style.display = 'none';
+            const contentEl = document.getElementById('contentState');
+            contentEl.style.display = 'block';
+            
+            const aptDate = new Date(appointment.date);
+            const formattedDate = `${aptDate.getDate()} ${MONTHS_TR[aptDate.getMonth()]} ${aptDate.getFullYear()}, ${DAYS_TR[aptDate.getDay()]}`;
+            
+            // İptal süresi kontrolü
+            const cancelDeadline = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.appointment?.cancelDeadlineMinutes) || 90;
+            const appointmentDateTime = new Date(`${appointment.date}T${appointment.time}`);
+            const now = new Date();
+            const minutesUntil = Math.floor((appointmentDateTime - now) / 60000);
+            const canCancel = minutesUntil > cancelDeadline;
+            
+            let statusHtml = '';
+            let actionsHtml = '';
+            
+            if (appointment.customerResponse === 'coming') {
+                statusHtml = `<span class="status-badge confirmed">✓ Katılacağınızı Onayladınız</span>`;
+                actionsHtml = `<div class="success-box">Randevunuzu onayladınız. Görüşmek üzere!</div>`;
+            } else if (appointment.customerResponse === 'cancelled' || appointment.status === 'cancelled') {
+                statusHtml = `<span class="status-badge cancelled">✕ İptal Edildi</span>`;
+                actionsHtml = `<div class="error-box">Bu randevu iptal edilmiştir.</div>`;
+            } else if (appointment.status === 'completed') {
+                statusHtml = `<span class="status-badge confirmed">✓ Tamamlandı</span>`;
+                actionsHtml = `<div class="success-box">Bu randevu tamamlanmıştır.</div>`;
+            } else if (minutesUntil <= 0) {
+                statusHtml = `<span class="status-badge expired">⏰ Randevu Geçti</span>`;
+                actionsHtml = `<div class="warning-box">Randevu saati geçmiştir.</div>`;
+            } else {
+                // Aktif randevu
+                actionsHtml = `
+                    <button class="btn btn-success" onclick="confirmAppointment()">
+                        ✓ Geliyorum
+                    </button>
+                `;
+                
+                if (canCancel) {
+                    actionsHtml += `
+                        <button class="btn btn-danger" onclick="showCancelConfirm()">
+                            ✕ İptal Et
+                        </button>
+                    `;
+                } else {
+                    actionsHtml += `
+                        <div class="warning-box">
+                            ⚠️ Randevunuza ${cancelDeadline} dakikadan az kaldığı için iptal edemezsiniz.
+                        </div>
+                    `;
+                }
+                
+                actionsHtml += `<p class="countdown">Randevunuza ${formatTimeRemaining(minutesUntil)} kaldı</p>`;
+            }
+            
+            contentEl.innerHTML = `
+                <div class="card-icon">📅</div>
+                <h2 class="card-title">Randevu Detayı</h2>
+                <p class="card-subtitle">${escapeHtml(salon?.name || appointment.salonName || 'Salon')}</p>
+                
+                ${statusHtml}
+                
+                <div class="detail-box">
+                    <div class="detail-row">
+                        <span class="detail-label">Müşteri</span>
+                        <span class="detail-value">${escapeHtml(appointment.customerName)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Hizmet</span>
+                        <span class="detail-value">${escapeHtml(appointment.service)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Tarih</span>
+                        <span class="detail-value">${formattedDate}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Saat</span>
+                        <span class="detail-value">${appointment.time}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Tutar</span>
+                        <span class="detail-value">${appointment.servicePrice || 0} ₺</span>
+                    </div>
+                </div>
+                
+                ${actionsHtml}
+                
+                ${appointment.customerResponse !== 'cancelled' && appointment.status !== 'cancelled' ? `
+                    <a href="${generateGoogleCalendarUrl()}" target="_blank" class="add-calendar">
+                        📆 Google Takvime Ekle
+                    </a>
+                ` : ''}
+            `;
+        }
+        
+        async function confirmAppointment() {
+            try {
+                await db.collection('appointments').doc(appointment.id).update({
+                    customerResponse: 'coming',
+                    customerResponseTime: new Date().toISOString()
+                });
+                
+                appointment.customerResponse = 'coming';
+                renderAppointment();
+                
+            } catch (e) {
+                console.error(e);
+                alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+            }
+        }
+        
+        function showCancelConfirm() {
+            if (confirm('Randevunuzu iptal etmek istediğinize emin misiniz?')) {
+                cancelAppointment();
+            }
+        }
+        
+        async function cancelAppointment() {
+            // İptal süresi kontrolü
+            const cancelDeadline = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.appointment?.cancelDeadlineMinutes) || 90;
+            const appointmentDateTime = new Date(`${appointment.date}T${appointment.time}`);
+            const now = new Date();
+            const minutesUntil = Math.floor((appointmentDateTime - now) / 60000);
+            
+            if (minutesUntil <= cancelDeadline) {
+                alert(`Randevunuza ${cancelDeadline} dakikadan az kaldığı için iptal edemezsiniz. Lütfen salonu arayın.`);
+                renderAppointment();
+                return;
+            }
+            
+            try {
+                await db.collection('appointments').doc(appointment.id).update({
+                    customerResponse: 'cancelled',
+                    status: 'cancelled',
+                    cancelledBy: 'customer',
+                    cancelledAt: new Date().toISOString()
+                });
+                
+                appointment.customerResponse = 'cancelled';
+                appointment.status = 'cancelled';
+                renderAppointment();
+                
+            } catch (e) {
+                console.error(e);
+                alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+            }
+        }
+        
+        function formatTimeRemaining(minutes) {
+            if (minutes < 60) return `${minutes} dakika`;
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            if (hours < 24) return `${hours} saat ${mins} dakika`;
+            const days = Math.floor(hours / 24);
+            return `${days} gün ${hours % 24} saat`;
+        }
+        
+        function generateGoogleCalendarUrl() {
+            const title = encodeURIComponent(`${appointment.service} - ${salon?.name || appointment.salonName}`);
+            const startDate = new Date(`${appointment.date}T${appointment.time}`);
+            const endDate = new Date(startDate.getTime() + (appointment.serviceDuration || 30) * 60000);
+            
+            const formatDate = (d) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+            
+            const details = encodeURIComponent(`Randevu: ${appointment.service}\nMüşteri: ${appointment.customerName}\nTutar: ${appointment.servicePrice || 0} ₺`);
+            const location = encodeURIComponent(salon?.address || '');
+            
+            return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${formatDate(startDate)}/${formatDate(endDate)}&details=${details}&location=${location}`;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
+        
+        init();
+    </script>
+</body>
+</html>
