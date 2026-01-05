@@ -1,20 +1,3 @@
 # Admin Panel
 /admin    /admin/index.html    200
 /admin/   /admin/index.html    200
-
-# Berber Yönetim - splat redirect
-/berber/*/yonetim/   /berber/salon/yonetim/index.html    200
-/berber/*/yonetim    /berber/salon/yonetim/index.html    200
-
-# Berber Salon Sayfası - splat redirect  
-/berber/*/   /berber/salon/index.html    200
-
-# Kuaför
-/kuafor/*/yonetim/   /berber/salon/yonetim/index.html    200
-/kuafor/*/yonetim    /berber/salon/yonetim/index.html    200
-/kuafor/*/   /berber/salon/index.html    200
-
-# Beauty
-/beauty/*/yonetim/   /berber/salon/yonetim/index.html    200
-/beauty/*/yonetim    /berber/salon/yonetim/index.html    200
-/beauty/*/   /berber/salon/index.html    200
