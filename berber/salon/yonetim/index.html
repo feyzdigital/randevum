@@ -2507,13 +2507,33 @@
             const slugParam = urlParams.get('slug');
             if (slugParam) return slugParam;
             
-            // Eski yöntem (geriye uyumluluk için)
+            // Path'den slug'ı al (tüm kategoriler için)
             const path = window.location.pathname;
-            const match = path.match(/\/berber\/([^\/]+)\/yonetim/);
-            return match ? match[1] : null;
+            // /berber/slug/yonetim, /kuafor/slug/yonetim, /beauty/slug/yonetim formatlarını destekle
+            const match = path.match(/\/(berber|kuafor|beauty)\/([^\/]+)\/yonetim/);
+            return match ? match[2] : null;
         }
         
-        // Initialize
+        // Süper admin kontrolü
+        function isSuperAdmin() {
+            const adminSession = localStorage.getItem('randevum_admin');
+            if (adminSession) {
+                try {
+                    const { pin, expiry } = JSON.parse(adminSession);
+                    // Admin config'den PIN kontrolü
+                    if (pin && new Date(expiry) > new Date()) {
+                        return true;
+                    }
+                } catch (e) {
+                    return false;
+                }
+            }
+            return false;
+        }
+        
+        // Süper admin olarak salona giriş
+        let isSuperAdminMode = false;
+        
         // Personel modu kontrolü
         let isStaffMode = false;
         let currentStaffId = null;
@@ -2523,12 +2543,25 @@
             if (typeof firebase !== 'undefined') {
                 db = firebase.firestore();
                 
-                // URL'den staff parametresini kontrol et
                 const urlParams = new URLSearchParams(window.location.search);
-                const staffParam = urlParams.get('staff');
+                const slug = getSlugFromUrl();
                 
+                // 1. Süper Admin kontrolü - admin=true parametresi ve geçerli admin session'ı varsa
+                const adminParam = urlParams.get('admin');
+                if (adminParam === 'true' && isSuperAdmin()) {
+                    isSuperAdminMode = true;
+                    if (slug) {
+                        await loadSalonData(slug);
+                        if (salon) {
+                            showDashboard();
+                            return;
+                        }
+                    }
+                }
+                
+                // 2. Personel modu kontrolü
+                const staffParam = urlParams.get('staff');
                 if (staffParam) {
-                    // Personel modu - session kontrolü
                     const staffSession = sessionStorage.getItem('staffSession');
                     if (staffSession) {
                         try {
@@ -2547,17 +2580,15 @@
                             sessionStorage.removeItem('staffSession');
                         }
                     }
-                    // Session yoksa giriş sayfasına yönlendir
                     window.location.href = '/berber/';
                     return;
                 }
                 
-                // Normal salon sahibi girişi
+                // 3. Normal salon sahibi girişi
                 const savedSession = localStorage.getItem('salonSession');
                 if (savedSession) {
                     try {
                         const session = JSON.parse(savedSession);
-                        const slug = getSlugFromUrl();
                         
                         if (session.slug === slug && session.expires > Date.now()) {
                             await loadSalonData(slug);
@@ -2588,8 +2619,14 @@
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('dashboard').classList.add('active');
             
+            // Süper admin modu ise özel banner göster
+            if (isSuperAdminMode) {
+                document.getElementById('headerSalonName').textContent = salon.name + ' (Admin)';
+                document.getElementById('headerAvatar').textContent = '👑';
+                showSuperAdminBanner();
+            }
             // Personel modu ise kısıtlı görünüm
-            if (isStaffMode) {
+            else if (isStaffMode) {
                 document.getElementById('headerSalonName').textContent = currentStaffName + ' (Personel)';
                 document.getElementById('headerAvatar').textContent = currentStaffName.charAt(0).toUpperCase();
                 
@@ -2630,6 +2667,27 @@
             
             // Raporları yükle (appointments yüklendikten sonra)
             setTimeout(() => loadReports(), 500);
+        }
+        
+        // Süper Admin modu banner'ı
+        function showSuperAdminBanner() {
+            const banner = document.createElement('div');
+            banner.className = 'staff-mode-banner';
+            banner.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            banner.innerHTML = `
+                <span>👑 <strong>Süper Admin Modu</strong> - Tüm yetkilere sahipsiniz</span>
+                <div style="margin-left: auto; display: flex; gap: 0.5rem;">
+                    <button onclick="window.location.href='/admin/'" class="btn btn-sm btn-outline" style="background: white; color: #d97706; border-color: white;">Admin Paneli</button>
+                    <button onclick="logoutSuperAdmin()" class="btn btn-sm btn-outline" style="background: transparent; border-color: white; color: white;">Çıkış</button>
+                </div>
+            `;
+            document.querySelector('.dashboard').insertBefore(banner, document.querySelector('.dashboard').firstChild);
+        }
+        
+        // Süper admin çıkışı
+        function logoutSuperAdmin() {
+            // Sadece bu salon'dan çık, admin session'ı koru
+            window.location.href = '/admin/';
         }
         
         // Personel modu banner'ı
