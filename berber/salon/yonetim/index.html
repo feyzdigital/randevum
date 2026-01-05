@@ -2615,7 +2615,7 @@
                 document.getElementById('headerAvatar').textContent = salon.name.charAt(0).toUpperCase();
             }
             
-            document.getElementById('viewSalonBtn').href = `/berber/${salon.slug}/`;
+            document.getElementById('viewSalonBtn').href = `/berber/salon/?slug=${salon.slug}`;
             
             // Load data
             loadAppointments();
@@ -3315,7 +3315,7 @@ ${salon.name}`;
                     package_price: `Mevcut personel: ${currentStaff}, Limit: ${limit.maxStaff}`,
                     setup_fee: '-',
                     created_at: new Date().toLocaleString('tr-TR'),
-                    admin_url: window.location.origin + '/berber/' + salon.slug + '/yonetim/'
+                    admin_url: window.location.origin + '/berber/salon/yonetim/?slug=' + salon.slug
                 }).then(() => {
                     closeUpgradeModal();
                     showToast('Yükseltme talebiniz gönderildi! En kısa sürede dönüş yapacağız.', 'success');
@@ -3548,13 +3548,13 @@ Panel: ${window.location.href}`);
             renderGallery();
             
             // QR Kod
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(location.origin + '/berber/' + salon.slug + '/')}`;
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(location.origin + '/berber/salon/?slug=' + salon.slug)}`;
             document.getElementById('qrCodeDisplay').innerHTML = `<img src="${qrUrl}" alt="QR Kod" id="qrImage" style="width:180px;height:180px;">`;
         }
         
         // QR Kod İndir
         function downloadQRCode() {
-            const salonUrl = `${location.origin}/berber/${salon.slug}/`;
+            const salonUrl = `${location.origin}/berber/salon/?slug=${salon.slug}`;
             const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&format=png&data=${encodeURIComponent(salonUrl)}`;
             
             // Fetch ile indirme
@@ -3575,7 +3575,7 @@ Panel: ${window.location.href}`);
         }
         
         function printQRCode() {
-            const salonUrl = `${location.origin}/berber/${salon.slug}/`;
+            const salonUrl = `${location.origin}/berber/salon/?slug=${salon.slug}`;
             const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(salonUrl)}`;
             window.open(qrUrl, '_blank');
         }
