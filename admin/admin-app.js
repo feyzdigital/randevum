@@ -182,8 +182,8 @@ function renderDetail() {
     } else if (AdminState.detailTab === 'appointments') {
         h += '<div class="card"><div class="card-header"><h3>Randevular</h3></div>';
         if (AdminState.salonAppointments.length === 0) h += '<p style="padding:1rem;color:var(--slate-500)">Randevu yok</p>';
-        else { h += '<table class="data-table"><thead><tr><th>Tarih</th><th>Saat</th><th>Musteri</th><th>Hizmet</th><th>Durum</th></tr></thead><tbody>';
-            AdminState.salonAppointments.forEach(a => { h += '<tr><td>' + (a.date || '-') + '</td><td>' + (a.time || '-') + '</td><td>' + esc(a.customerName || '-') + '</td><td>' + esc(a.service || a.serviceName || '-') + '</td><td><span class="status-badge ' + (a.status === 'confirmed' ? 'active' : a.status === 'cancelled' ? 'inactive' : '') + '">' + (a.status || 'pending') + '</span></td></tr>'; });
+        else { h += '<table class="data-table"><thead><tr><th>Tarih</th><th>Saat</th><th>Musteri</th><th>Hizmet</th><th>Durum</th><th>Islem</th></tr></thead><tbody>';
+            AdminState.salonAppointments.forEach(a => { h += '<tr><td>' + (a.date || '-') + '</td><td>' + (a.time || '-') + '</td><td>' + esc(a.customerName || '-') + '<br><small style="color:var(--slate-500)">' + (a.customerPhone || '') + '</small></td><td>' + esc(a.service || a.serviceName || '-') + '</td><td><span class="status-badge ' + (a.status === 'confirmed' ? 'active' : a.status === 'cancelled' ? 'inactive' : a.status === 'completed' ? 'active' : '') + '">' + (a.status || 'pending') + '</span></td><td><button onclick="showEditAppointmentModal(\'' + a.id + '\')" class="btn btn-icon" title="Duzenle">&#9998;</button><button onclick="deleteAppointment(\'' + a.id + '\')" class="btn btn-icon danger" title="Sil">&#128465;</button></td></tr>'; });
             h += '</tbody></table>'; }
         h += '</div>';
     } else if (AdminState.detailTab === 'hours') {
@@ -202,7 +202,7 @@ function renderDetail() {
         });
         h += '</div></div>';
     } else if (AdminState.detailTab === 'admin') {
-        h += '<div class="detail-grid"><div class="card"><h3>&#128274; Giris Bilgileri</h3><div class="info-list"><div class="info-row"><span class="info-label">Telefon</span><span class="info-value"><strong>' + (s.phone || '-') + '</strong></span></div><div class="info-row"><span class="info-label">PIN Kodu</span><span class="info-value"><code style="font-size:1.2rem;background:var(--slate-100);padding:0.25rem 0.75rem;border-radius:4px">' + (s.pin || 'Belirlenmemis') + '</code></span></div><div class="info-row"><span class="info-label">Yonetim Paneli</span><span class="info-value" style="word-break:break-all;font-size:0.85rem">' + location.origin + '/' + (s.category || 'berber') + '/' + s.slug + '/yonetim/</span></div></div><button onclick="showChangePinModal(\'' + s.id + '\')" class="btn btn-outline" style="margin-top:1rem">PIN Degistir</button></div>';
+        h += '<div class="detail-grid"><div class="card"><h3>&#128274; Giris Bilgileri</h3><div class="info-list"><div class="info-row"><span class="info-label">Telefon</span><span class="info-value"><strong>' + (s.mobilePhone || s.phone || '-') + '</strong></span></div><div class="info-row"><span class="info-label">PIN Kodu</span><span class="info-value"><code style="font-size:1.2rem;background:var(--slate-100);padding:0.25rem 0.75rem;border-radius:4px">' + (s.pin || 'Belirlenmemis') + '</code></span></div><div class="info-row"><span class="info-label">Yonetim Paneli</span><span class="info-value" style="word-break:break-all;font-size:0.85rem">' + location.origin + '/berber/salon/yonetim/?slug=' + s.slug + '</span></div></div><div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:1rem"><a href="/berber/salon/yonetim/?slug=' + s.slug + '" target="_blank" class="btn btn-primary">🚀 Yonetim Paneline Git</a><button onclick="showChangePinModal(\'' + s.id + '\')" class="btn btn-outline">PIN Degistir</button></div></div>';
         h += '<div class="card"><h3 style="color:var(--danger)">&#9888; Tehlikeli Islemler</h3><div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1rem">';
         if (s.active) h += '<button onclick="toggleSalonStatus(\'' + s.id + '\', false)" class="btn btn-outline" style="border-color:var(--warning);color:var(--warning)">Salonu Pasife Al</button>';
         else h += '<button onclick="toggleSalonStatus(\'' + s.id + '\', true)" class="btn btn-outline" style="border-color:var(--success);color:var(--success)">Salonu Aktif Et</button>';
@@ -224,8 +224,8 @@ async function approveSalon(id) {
         const doc = await ref.get(); const data = doc.data();
         const pin = data.pin || Math.floor(1000 + Math.random() * 9000).toString();
         
-        // Salon URL'leri
-        const panelUrl = 'https://randevum.feyz.digital/' + (data.category || 'berber') + '/' + data.slug + '/yonetim/';
+        // Salon URL'leri - Yeni format
+        const panelUrl = 'https://randevum.feyz.digital/berber/salon/yonetim/?slug=' + data.slug;
         const salonUrl = 'https://randevum.feyz.digital/' + (data.category || 'berber') + '/' + data.slug + '/';
         
         // QR Kod URL'leri (harici API)
@@ -443,6 +443,42 @@ async function permanentDeleteSalon(id) {
 function closeModal(e) { if (!e || e.target.classList.contains('modal-overlay')) document.getElementById('modal').innerHTML = ''; }
 function showToast(msg, type) { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast show ' + (type || 'info'); setTimeout(() => t.className = 'toast', 3000); }
 function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+// Randevu Düzenleme
+function showEditAppointmentModal(aptId) {
+    const apt = AdminState.salonAppointments.find(a => a.id === aptId); if (!apt) return;
+    document.getElementById('modal').innerHTML = '<div class="modal-overlay" onclick="closeModal(event)"><div class="modal" onclick="event.stopPropagation()"><div class="modal-header"><h2>Randevu Duzenle</h2><button class="modal-close" onclick="closeModal()">&times;</button></div><div class="modal-body"><div class="form-group"><label class="form-label">Musteri Adi</label><input type="text" id="aptCustomerName" class="form-input" value="' + esc(apt.customerName || '') + '"></div><div class="form-group"><label class="form-label">Telefon</label><input type="tel" id="aptCustomerPhone" class="form-input" value="' + (apt.customerPhone || '') + '"></div><div class="form-group"><label class="form-label">Tarih</label><input type="date" id="aptDate" class="form-input" value="' + (apt.date || '') + '"></div><div class="form-group"><label class="form-label">Saat</label><input type="time" id="aptTime" class="form-input" value="' + (apt.time || '') + '"></div><div class="form-group"><label class="form-label">Durum</label><select id="aptStatus" class="form-select"><option value="pending"' + (apt.status === 'pending' ? ' selected' : '') + '>Bekliyor</option><option value="confirmed"' + (apt.status === 'confirmed' ? ' selected' : '') + '>Onaylandi</option><option value="completed"' + (apt.status === 'completed' ? ' selected' : '') + '>Tamamlandi</option><option value="cancelled"' + (apt.status === 'cancelled' ? ' selected' : '') + '>Iptal</option></select></div><div class="form-group"><label class="form-label">Not</label><textarea id="aptNote" class="form-input" rows="2">' + esc(apt.note || apt.customerNote || '') + '</textarea></div></div><div class="modal-footer"><button onclick="closeModal()" class="btn btn-outline">Iptal</button><button onclick="updateAppointment(\'' + aptId + '\')" class="btn btn-primary">Kaydet</button></div></div></div>';
+}
+
+async function updateAppointment(aptId) {
+    const sid = AdminState.selectedSalon.id;
+    const data = {
+        customerName: document.getElementById('aptCustomerName').value.trim(),
+        customerPhone: document.getElementById('aptCustomerPhone').value.replace(/\D/g, ''),
+        date: document.getElementById('aptDate').value,
+        time: document.getElementById('aptTime').value,
+        status: document.getElementById('aptStatus').value,
+        note: document.getElementById('aptNote').value.trim(),
+        updatedAt: new Date().toISOString(),
+        updatedBy: 'admin'
+    };
+    try {
+        await db.collection('salons').doc(sid).collection('appointments').doc(aptId).update(data);
+        showToast('Randevu guncellendi!', 'success');
+        closeModal();
+        await loadSalonDetails(sid);
+    } catch (e) { showToast('Hata: ' + e.message, 'error'); }
+}
+
+async function deleteAppointment(aptId) {
+    if (!confirm('Bu randevuyu silmek istediginize emin misiniz?')) return;
+    const sid = AdminState.selectedSalon.id;
+    try {
+        await db.collection('salons').doc(sid).collection('appointments').doc(aptId).delete();
+        showToast('Randevu silindi', 'success');
+        await loadSalonDetails(sid);
+    } catch (e) { showToast('Hata: ' + e.message, 'error'); }
+}
 
 // QR Kod Yeniden Oluşturma
 async function regenerateQRCode(id) {
