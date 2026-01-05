@@ -1038,12 +1038,12 @@
                     return false;
                 }
                 
-                // Telefon doğrulama kontrolü (2 aşamalı doğrulama)
-                if (!phoneVerified) {
-                    showToast('Lütfen telefon numaranızı doğrulayın', 'error');
-                    document.getElementById('verifyPhoneBtn').focus();
-                    return false;
-                }
+                // Telefon doğrulama kontrolü - GEÇİCİ OLARAK DEVRE DIŞI
+                // if (!phoneVerified) {
+                //     showToast('Lütfen telefon numaranızı doğrulayın', 'error');
+                //     document.getElementById('verifyPhoneBtn').focus();
+                //     return false;
+                // }
                 
                 if (!v('email').includes('@')) { showToast('Geçerli e-posta girin', 'error'); return false; }
                 if (!v('city')) { showToast('Şehir girin', 'error'); return false; }
