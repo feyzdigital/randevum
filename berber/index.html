@@ -1311,12 +1311,22 @@
             errorEl.style.display = 'none';
             
             try {
-                // Önce telefon ile ara
-                const phoneToSearch = phone.slice(-10);
-                const snapshot = await db.collection('salons')
-                    .where('mobilePhone', '==', phoneToSearch)
+                // Önce telefon ile ara - hem 10 hem 11 haneli dene
+                const phone10 = phone.slice(-10);
+                const phone11 = '0' + phone10;
+                
+                let snapshot = await db.collection('salons')
+                    .where('mobilePhone', '==', phone10)
                     .where('active', '==', true)
                     .get();
+                
+                // 10 haneli bulunamadıysa 11 haneli dene
+                if (snapshot.empty) {
+                    snapshot = await db.collection('salons')
+                        .where('mobilePhone', '==', phone11)
+                        .where('active', '==', true)
+                        .get();
+                }
                 
                 if (snapshot.empty) {
                     errorEl.textContent = 'Bu telefon numarasına kayıtlı salon bulunamadı';
