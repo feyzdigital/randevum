@@ -1263,7 +1263,7 @@
         function openSalonLogin() {
             const slug = prompt('Salon URL\'nizi girin:\n(Örn: usta-berber)');
             if (slug && slug.trim()) {
-                window.location.href = `/berber/${slug.trim()}/yonetim/`;
+                window.location.href = `/berber/salon/yonetim/?slug=${slug.trim()}`;
             }
         }
         
@@ -1340,7 +1340,7 @@
                         // PIN doğru, yönlendir
                         const slug = salon.slug;
                         const category = salon.category || 'berber';
-                        window.location.href = `/${category}/${slug}/yonetim/`;
+                        window.location.href = `/berber/salon/yonetim/?slug=${slug}`;
                     } else {
                         errorEl.textContent = 'PIN kodu hatalı';
                         errorEl.style.display = 'block';
@@ -1415,7 +1415,7 @@
                         salonSlug: foundSalon.slug,
                         category: foundSalon.category || 'berber'
                     }));
-                    window.location.href = `/${foundSalon.category || 'berber'}/${foundSalon.slug}/yonetim/?staff=${foundStaff.id}`;
+                    window.location.href = `/berber/salon/yonetim/?slug=${foundSalon.slug}&staff=${foundStaff.id}`;
                 } else {
                     errorEl.textContent = 'Telefon veya PIN hatalı';
                     errorEl.style.display = 'block';
