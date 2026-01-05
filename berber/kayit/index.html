@@ -1220,7 +1220,7 @@
                 
                 document.getElementById('successPhone').textContent = d.phone;
                 document.getElementById('successPin').textContent = d.pin;
-                document.getElementById('successUrl').textContent = location.origin + '/berber/' + slug + '/yonetim/';
+                document.getElementById('successUrl').textContent = location.origin + '/berber/salon/yonetim/?slug=' + slug;
                 document.getElementById('stepsIndicator').style.display = 'none';
                 document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
                 document.getElementById('successScreen').classList.remove('hidden');
