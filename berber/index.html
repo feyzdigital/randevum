@@ -968,7 +968,7 @@
                     ? services.slice(0, 3) 
                     : ['Saç Kesimi', 'Sakal'];
                 
-                const salonUrl = salon.isDemo ? '/demo/berber/' : `/berber/${salon.slug}/`;
+                const salonUrl = salon.isDemo ? '/demo/berber/' : `/berber/salon/?slug=${salon.slug}`;
                 const openNow = isOpenNow(salon);
                 const distanceText = salon.distance && salon.distance < 999 
                     ? `${salon.distance.toFixed(1)} km` 
