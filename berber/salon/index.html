@@ -2137,7 +2137,7 @@
 ${apt.customerNote ? `• Not: ${apt.customerNote}` : ''}
 
 Yönetim panelinden onaylayın:
-${location.origin}/berber/${salon.slug}/yonetim/`;
+${location.origin}/berber/salon/yonetim/?slug=${salon.slug}`;
             
             window.salonNotifyUrl = `https://wa.me/90${phone}?text=${encodeURIComponent(msg)}`;
             
@@ -2171,7 +2171,7 @@ Görüşmek üzere!`;
                     service_name: apt.service,
                     service_price: apt.servicePrice + ' ₺',
                     customer_note: apt.customerNote || '-',
-                    panel_url: location.origin + '/berber/' + salon.slug + '/yonetim/',
+                    panel_url: location.origin + '/berber/salon/yonetim/?slug=' + salon.slug,
                     whatsapp_approval_url: whatsappApprovalUrl
                 }).then(() => {
                     console.log('📧 Berbere e-posta bildirimi gönderildi');
