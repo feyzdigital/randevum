@@ -1,26 +1,25 @@
-// Cloudflare Workers - Twilio Verify OTP
-export async function onRequest(context) {
+// Cloudflare Pages Functions - Twilio Verify OTP
+
+// CORS preflight
+export async function onRequestOptions() {
+    return new Response(null, {
+        status: 200,
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        }
+    });
+}
+
+// POST handler
+export async function onRequestPost(context) {
     const { request, env } = context;
     
-    // CORS headers
     const headers = {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
         'Content-Type': 'application/json'
     };
-
-    // Handle preflight
-    if (request.method === 'OPTIONS') {
-        return new Response(null, { status: 200, headers });
-    }
-
-    if (request.method !== 'POST') {
-        return new Response(JSON.stringify({ error: 'Method not allowed' }), { 
-            status: 405, 
-            headers 
-        });
-    }
 
     try {
         const { phone, code } = await request.json();
