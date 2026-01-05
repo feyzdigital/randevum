@@ -1,21 +1,20 @@
+# Admin Panel
 /admin    /admin/index.html    200
 /admin/   /admin/index.html    200
 
-# Berber yönetim paneli - dinamik slug desteği
-/berber/:slug/yonetim    /berber/salon/yonetim/index.html    200
-/berber/:slug/yonetim/   /berber/salon/yonetim/index.html    200
+# Berber Yönetim Paneli (wildcard)
+/berber/*/yonetim/   /berber/salon/yonetim/index.html    200
+/berber/*/yonetim    /berber/salon/yonetim/index.html    200
 
-# Berber salon sayfası
-/berber/:slug    /berber/salon/index.html    200
-/berber/:slug/   /berber/salon/index.html    200
+# Berber Salon Sayfası (wildcard)
+/berber/*/   /berber/salon/index.html    200
 
-# Kuaför ve Beauty kategorileri
-/kuafor/:slug/yonetim    /berber/salon/yonetim/index.html    200
-/kuafor/:slug/yonetim/   /berber/salon/yonetim/index.html    200
-/kuafor/:slug    /berber/salon/index.html    200
-/kuafor/:slug/   /berber/salon/index.html    200
+# Kuaför Yönetim ve Salon
+/kuafor/*/yonetim/   /berber/salon/yonetim/index.html    200
+/kuafor/*/yonetim    /berber/salon/yonetim/index.html    200
+/kuafor/*/   /berber/salon/index.html    200
 
-/beauty/:slug/yonetim    /berber/salon/yonetim/index.html    200
-/beauty/:slug/yonetim/   /berber/salon/yonetim/index.html    200
-/beauty/:slug    /berber/salon/index.html    200
-/beauty/:slug/   /berber/salon/index.html    200
+# Beauty Yönetim ve Salon
+/beauty/*/yonetim/   /berber/salon/yonetim/index.html    200
+/beauty/*/yonetim    /berber/salon/yonetim/index.html    200
+/beauty/*/   /berber/salon/index.html    200
