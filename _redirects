@@ -2,19 +2,19 @@
 /admin    /admin/index.html    200
 /admin/   /admin/index.html    200
 
-# Berber Yönetim Paneli (wildcard)
+# Berber Yönetim - splat redirect
 /berber/*/yonetim/   /berber/salon/yonetim/index.html    200
 /berber/*/yonetim    /berber/salon/yonetim/index.html    200
 
-# Berber Salon Sayfası (wildcard)
+# Berber Salon Sayfası - splat redirect  
 /berber/*/   /berber/salon/index.html    200
 
-# Kuaför Yönetim ve Salon
+# Kuaför
 /kuafor/*/yonetim/   /berber/salon/yonetim/index.html    200
 /kuafor/*/yonetim    /berber/salon/yonetim/index.html    200
 /kuafor/*/   /berber/salon/index.html    200
 
-# Beauty Yönetim ve Salon
+# Beauty
 /beauty/*/yonetim/   /berber/salon/yonetim/index.html    200
 /beauty/*/yonetim    /berber/salon/yonetim/index.html    200
 /beauty/*/   /berber/salon/index.html    200
