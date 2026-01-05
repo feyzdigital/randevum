@@ -4387,9 +4387,20 @@ END:VEVENT
             localStorage.setItem('pwa-panel-dismiss', (count + 1).toString());
         }
         
-        // Service Worker
+        // Service Worker - Yönetim panelinde devre dışı bırak ve mevcut SW'yi temizle
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js').catch(() => {});
+            // Mevcut service worker'ları kaldır (cache sorunlarını önlemek için)
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(registration => {
+                    registration.unregister();
+                });
+            });
+            // Cache'leri temizle
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => caches.delete(name));
+                });
+            }
         }
         
         // ========== RAPORLAR FONKSİYONLARI ==========
