@@ -2502,6 +2502,12 @@
         
         // Get slug from URL
         function getSlugFromUrl() {
+            // Önce URL parametresinden slug'ı al
+            const urlParams = new URLSearchParams(window.location.search);
+            const slugParam = urlParams.get('slug');
+            if (slugParam) return slugParam;
+            
+            // Eski yöntem (geriye uyumluluk için)
             const path = window.location.pathname;
             const match = path.match(/\/berber\/([^\/]+)\/yonetim/);
             return match ? match[1] : null;
