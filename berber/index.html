@@ -1314,7 +1314,7 @@
                 // Önce telefon ile ara
                 const phoneToSearch = phone.slice(-10);
                 const snapshot = await db.collection('salons')
-                    .where('phone', '==', phoneToSearch)
+                    .where('mobilePhone', '==', phoneToSearch)
                     .where('active', '==', true)
                     .get();
                 
