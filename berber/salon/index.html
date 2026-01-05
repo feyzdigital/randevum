@@ -1583,14 +1583,21 @@
             firebase.initializeApp(FIREBASE_CONFIG);
             db = firebase.firestore();
             
-            const pathParts = window.location.pathname.split('/').filter(Boolean);
-            console.log('Path parts:', pathParts);
+            // Önce URL parametresinden slug'ı al
+            const urlParams = new URLSearchParams(window.location.search);
+            let slug = urlParams.get('slug');
             
-            // URL: /berber/[slug]/ -> pathParts = ['berber', 'slug']
-            const slug = pathParts[1];
+            // Eğer parametre yoksa, eski yöntemle dene (geriye uyumluluk)
+            if (!slug) {
+                const pathParts = window.location.pathname.split('/').filter(Boolean);
+                console.log('Path parts:', pathParts);
+                // URL: /berber/[slug]/ -> pathParts = ['berber', 'slug']
+                slug = pathParts[1];
+            }
+            
             console.log('Looking for slug:', slug);
             
-            if (!slug) { showError(); return; }
+            if (!slug || slug === 'salon') { showError(); return; }
             
             try {
                 // Önce slug ile ara
