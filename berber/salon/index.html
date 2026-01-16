@@ -1261,6 +1261,76 @@
         @media (max-width: 900px) {
             footer { display: none; }
         }
+        
+        /* AI Öneri Banner */
+        .ai-suggestion-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .ai-banner-content {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .ai-banner-icon {
+            font-size: 1.5rem;
+        }
+        
+        .ai-banner-text {
+            display: flex;
+            flex-direction: column;
+            gap: 0.125rem;
+        }
+        
+        .ai-banner-text strong {
+            font-size: 0.9rem;
+            color: #1e293b;
+        }
+        
+        .ai-banner-text span {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+        
+        .ai-suggest-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        
+        .ai-suggest-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+        
+        @media (max-width: 500px) {
+            .ai-suggestion-banner {
+                flex-direction: column;
+                text-align: center;
+            }
+            .ai-banner-content {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1364,6 +1434,21 @@
                 
                 <div class="booking-content">
                     <h3 class="booking-title">Randevu Al</h3>
+                    
+                    <!-- AI Öneri Butonu -->
+                    <div class="ai-suggestion-banner" id="aiSuggestionBanner" style="display: none;">
+                        <div class="ai-banner-content">
+                            <span class="ai-banner-icon">🤖</span>
+                            <div class="ai-banner-text">
+                                <strong>Daha önce geldiyseniz</strong>
+                                <span>Size özel tarih önerebiliriz</span>
+                            </div>
+                        </div>
+                        <button type="button" class="ai-suggest-btn" onclick="triggerAIRecommendation()">
+                            <span class="ai-icon">✨</span>
+                            Akıllı Öneri
+                        </button>
+                    </div>
                     
                     <div class="form-step">
                         <div class="step-header">
@@ -2381,8 +2466,99 @@ Onayınızı bekliyorum. Teşekkürler!`;
             document.body.style.overflow = '';
         }
         
+        // ========== AI ÖNERİ SİSTEMİ ==========
+        let customerAppointmentsCache = null;
+        
+        // AI Öneri banner'ını göster
+        function showAIBanner() {
+            const banner = document.getElementById('aiSuggestionBanner');
+            if (banner) banner.style.display = 'flex';
+        }
+        
+        // AI Önerisini tetikle
+        async function triggerAIRecommendation() {
+            // Telefon numarası iste
+            const phone = prompt('Telefon numaranızı girin (Daha önce randevu aldıysanız):', '05');
+            
+            if (!phone || phone.length < 10) {
+                alert('Geçerli bir telefon numarası girin.');
+                return;
+            }
+            
+            // Loading göster
+            const btn = document.querySelector('.ai-suggest-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="ai-icon">⏳</span> Analiz ediliyor...';
+            btn.disabled = true;
+            
+            try {
+                // Müşteri randevularını getir
+                const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+                const snapshot = await db.collection('appointments')
+                    .where('customerPhone', '>=', cleanPhone)
+                    .where('customerPhone', '<=', cleanPhone + '\uf8ff')
+                    .orderBy('customerPhone')
+                    .get();
+                
+                const customerAppointments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                customerAppointmentsCache = customerAppointments;
+                
+                // Salon randevularını al (müsaitlik için)
+                const allAppointments = window.allAppointments || [];
+                
+                // AI Önerisini oluştur
+                if (typeof AIRecommendation !== 'undefined') {
+                    const recommendation = AIRecommendation.generateRecommendation(
+                        customerAppointments,
+                        salon,
+                        allAppointments
+                    );
+                    
+                    showAIRecommendationPopup(recommendation);
+                } else {
+                    alert('AI modülü yüklenemedi. Lütfen sayfayı yenileyin.');
+                }
+                
+            } catch (e) {
+                console.error('AI Öneri hatası:', e);
+                alert('Öneri oluşturulurken bir hata oluştu.');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+        
+        // Öneriyi uygula (tarih ve saat seç)
+        function applyAIRecommendation(date, time) {
+            // Tarih seçiciden o tarihi bul ve tıkla
+            const dateItems = document.querySelectorAll('.date-item');
+            dateItems.forEach(item => {
+                if (item.dataset.date === date) {
+                    item.click();
+                }
+            });
+            
+            // Saat seçimi için bekle
+            setTimeout(() => {
+                const timeSlots = document.querySelectorAll('.time-slot:not(.disabled)');
+                timeSlots.forEach(slot => {
+                    if (slot.dataset.time === time) {
+                        slot.click();
+                    }
+                });
+            }, 500);
+            
+            closeAIPopup();
+        }
+        
+        // Sayfa yüklendiğinde AI banner'ı göster
+        setTimeout(showAIBanner, 1000);
+        
         init();
     </script>
+    
+    <!-- AI Recommendation Module -->
+    <script src="/ai-recommendation.js"></script>
     
     <!-- Lightbox -->
     <div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightbox()">
