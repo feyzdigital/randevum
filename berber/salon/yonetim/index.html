@@ -1874,7 +1874,111 @@
             font-weight: 600;
             color: var(--slate-700);
         }
+        
+        /* ========== CHART.JS GRAFİK STİLLERİ ========== */
+        .chart-section {
+            padding: 1.25rem;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--slate-100);
+        }
+        
+        .chart-header h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--slate-800);
+            margin: 0;
+            border: none;
+            padding: 0;
+        }
+        
+        .chart-legend {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--slate-500);
+        }
+        
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+        }
+        
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        @media (max-width: 900px) {
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .comparison-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .comparison-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            padding: 1rem;
+            background: var(--slate-50);
+            border-radius: var(--radius);
+        }
+        
+        .comparison-label {
+            font-size: 0.85rem;
+            color: var(--slate-500);
+        }
+        
+        .comparison-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        
+        /* Finance Period Buttons (opsiyonel ayrı selector) */
+        .finance-period-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: white;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-right: 1px solid var(--slate-200);
+        }
+        
+        .finance-period-btn:last-child {
+            border-right: none;
+        }
+        
+        .finance-period-btn.active {
+            background: var(--primary);
+            color: white;
+        }
     </style>
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <!-- Loading -->
@@ -2143,6 +2247,51 @@
                             <div class="report-card-content">
                                 <div class="report-card-value" id="reportTotalRevenue">0 ₺</div>
                                 <div class="report-card-label">Toplam Ciro</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Finans Grafikleri Container -->
+                    <div id="financeChartsContainer">
+                        
+                        <!-- Ciro Grafiği -->
+                        <div class="report-section chart-section">
+                            <div class="chart-header">
+                                <h4>💰 Ciro Grafiği</h4>
+                                <div class="chart-legend">
+                                    <span class="legend-dot" style="background: #6366f1;"></span>
+                                    <span>Günlük Ciro</span>
+                                </div>
+                            </div>
+                            <div class="chart-container" style="height: 280px;">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- İki sütunlu grafik alanı -->
+                        <div class="charts-row">
+                            <!-- Hizmet Dağılımı -->
+                            <div class="report-section chart-section">
+                                <h4>🥧 Hizmet Dağılımı</h4>
+                                <div class="chart-container" style="height: 250px;">
+                                    <canvas id="servicesChart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <!-- Saatlik Yoğunluk -->
+                            <div class="report-section chart-section">
+                                <h4>⏰ Saatlik Yoğunluk</h4>
+                                <div class="chart-container" style="height: 250px;">
+                                    <canvas id="hourlyChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Karşılaştırma İstatistikleri -->
+                        <div class="report-section">
+                            <h4>📊 Dönem Karşılaştırması</h4>
+                            <div id="comparisonStats" class="comparison-stats">
+                                <!-- Karşılaştırma verileri buraya yüklenecek -->
                             </div>
                         </div>
                     </div>
@@ -4452,6 +4601,13 @@ END:VEVENT
             document.getElementById('reportCancelledAppointments').textContent = cancelled;
             document.getElementById('reportTotalRevenue').textContent = revenue.toLocaleString('tr-TR') + ' ₺';
             
+            // Chart.js Finans Dashboard'u güncelle
+            if (typeof FinanceDashboard !== 'undefined') {
+                FinanceDashboard.currentPeriod = currentReportPeriod;
+                FinanceDashboard.appointments = appointments;
+                FinanceDashboard.render();
+            }
+            
             // Personel performansı
             renderStaffPerformance(periodAppointments);
             
@@ -4627,5 +4783,8 @@ END:VEVENT
             <button class="pwa-btn pwa-btn-close" onclick="closePWABanner()">Sonra</button>
         </div>
     </div>
+    
+    <!-- Finance Dashboard Module -->
+    <script src="/finance-dashboard.js"></script>
 </body>
 </html>
