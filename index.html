@@ -12,7 +12,18 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Randevum">
     <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/icons/icon.svg">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/icons/icon-128x128.png">
+    
+    <!-- iOS Splash Screens -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Microsoft Tiles -->
+    <meta name="msapplication-TileColor" content="#6366f1">
+    <meta name="msapplication-TileImage" content="/icons/icon-144x144.png">
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💈</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -267,6 +278,13 @@
     
     <!-- Mobile Menu Overlay -->
     <div id="mobileMenuOverlay" class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
+    
+    <!-- Firebase & Push Notification Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js"></script>
+    <script src="/config.js"></script>
+    <script src="/push-notifications.js"></script>
     
     <!-- Scripts -->
     <script>
