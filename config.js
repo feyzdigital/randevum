@@ -137,6 +137,91 @@ const EMAILJS_CONFIG = {
     publicKey: 'DFMgbrmsjlK0hxlc5'
 };
 
+// Firebase Cloud Messaging (Push Notifications) Configuration
+// VAPID Key'i Firebase Console'dan alın:
+// Firebase Console > Project Settings > Cloud Messaging > Web Push certificates
+const FCM_CONFIG = {
+    vapidKey: 'BBOpQdU-eCIYjiQHiVPY8x2tBlhDYhZlYgARXayyRs4XR1q9zOghL_zuu3gaTSvgOGY6Q9fAtEK5zQXu-VMaHZM', // Firebase Console'dan alınacak
+    
+    // Bildirim ayarları
+    notifications: {
+        // Müşteri bildirimleri
+        customer: {
+            appointmentConfirmed: true,    // Randevu onaylandı
+            appointmentCancelled: true,    // Randevu iptal edildi
+            appointmentReminder: true,     // Randevu hatırlatma (2 saat önce)
+            appointmentChanged: true       // Randevu saati değişti
+        },
+        // Salon bildirimleri
+        salon: {
+            newAppointment: true,          // Yeni randevu
+            appointmentCancelled: true,    // Müşteri iptal etti
+            customerArriving: true,        // Müşteri "geliyorum" dedi
+            dailySummary: true,            // Günlük özet (sabah 08:00)
+            newReview: true                // Yeni yorum
+        }
+    },
+    
+    // Hatırlatma zamanları (dakika cinsinden, randevudan önce)
+    reminderTimes: [120, 60, 30], // 2 saat, 1 saat, 30 dakika önce
+    
+    // Günlük özet saati
+    dailySummaryTime: '08:00'
+};
+
+// Push Notification şablonları
+const NOTIFICATION_TEMPLATES = {
+    // Müşteri bildirimleri
+    appointmentConfirmed: {
+        title: '✅ Randevunuz Onaylandı!',
+        body: '{salonName} - {date} saat {time}',
+        icon: '/icons/icon-192x192.png'
+    },
+    appointmentCancelled: {
+        title: '❌ Randevunuz İptal Edildi',
+        body: '{salonName} tarafından randevunuz iptal edildi',
+        icon: '/icons/icon-192x192.png'
+    },
+    appointmentReminder: {
+        title: '⏰ Randevu Hatırlatması',
+        body: '{salonName} randevunuza {remaining} kaldı',
+        icon: '/icons/icon-192x192.png',
+        requireInteraction: true
+    },
+    appointmentChanged: {
+        title: '📅 Randevu Saati Değişti',
+        body: 'Yeni saat: {date} {time} - {salonName}',
+        icon: '/icons/icon-192x192.png'
+    },
+    
+    // Salon bildirimleri
+    newAppointment: {
+        title: '🆕 Yeni Randevu!',
+        body: '{customerName} - {date} saat {time} - {serviceName}',
+        icon: '/icons/icon-192x192.png'
+    },
+    customerCancelled: {
+        title: '❌ Randevu İptal Edildi',
+        body: '{customerName} randevusunu iptal etti - {date} {time}',
+        icon: '/icons/icon-192x192.png'
+    },
+    customerArriving: {
+        title: '🚶 Müşteri Yolda!',
+        body: '{customerName} "Geliyorum" dedi - {time} randevusu',
+        icon: '/icons/icon-192x192.png'
+    },
+    dailySummary: {
+        title: '📊 Bugünkü Randevular',
+        body: 'Bugün {count} randevunuz var. İlk randevu: {firstTime}',
+        icon: '/icons/icon-192x192.png'
+    },
+    newReview: {
+        title: '⭐ Yeni Yorum!',
+        body: '{customerName}: "{comment}" - {rating} yıldız',
+        icon: '/icons/icon-192x192.png'
+    }
+};
+
 // Initialize Firebase
 if (typeof firebase !== 'undefined') {
     firebase.initializeApp(FIREBASE_CONFIG);
