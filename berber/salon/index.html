@@ -2145,7 +2145,11 @@
             const customerNote = document.getElementById('customerNote').value.trim();
             
             if (!customerName || customerPhone.length < 10) {
-                alert('Lütfen ad ve telefon bilgilerinizi doğru girin.');
+                if (typeof RandevumUX !== 'undefined') {
+                    RandevumUX.warning('Lütfen ad ve telefon bilgilerinizi doğru girin.');
+                } else {
+                    alert('Lütfen ad ve telefon bilgilerinizi doğru girin.');
+                }
                 return;
             }
             
@@ -2180,7 +2184,11 @@
                 
             } catch (error) {
                 console.error(error);
-                alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+                if (typeof RandevumUX !== 'undefined') {
+                    RandevumUX.error('Bir hata oluştu. Lütfen tekrar deneyin.');
+                } else {
+                    alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+                }
                 btn.disabled = false;
                 btn.textContent = '✓ Randevuyu Tamamla';
             }
@@ -2197,6 +2205,11 @@
             
             document.getElementById('bookingCard').classList.add('collapsed');
             document.getElementById('successModal').classList.add('active');
+            
+            // Paylaşım butonlarını ekle
+            if (typeof RandevumUX !== 'undefined') {
+                setTimeout(() => RandevumUX.addShareButtons(apt), 100);
+            }
         }
         
         function formatDateFromStr(dateStr) {
@@ -2481,7 +2494,11 @@ Onayınızı bekliyorum. Teşekkürler!`;
             const phone = prompt('Telefon numaranızı girin (Daha önce randevu aldıysanız):', '05');
             
             if (!phone || phone.length < 10) {
-                alert('Geçerli bir telefon numarası girin.');
+                if (typeof RandevumUX !== 'undefined') {
+                    RandevumUX.warning('Geçerli bir telefon numarası girin.');
+                } else {
+                    alert('Geçerli bir telefon numarası girin.');
+                }
                 return;
             }
             
@@ -2516,12 +2533,20 @@ Onayınızı bekliyorum. Teşekkürler!`;
                     
                     showAIRecommendationPopup(recommendation);
                 } else {
-                    alert('AI modülü yüklenemedi. Lütfen sayfayı yenileyin.');
+                    if (typeof RandevumUX !== 'undefined') {
+                        RandevumUX.error('AI modülü yüklenemedi. Lütfen sayfayı yenileyin.');
+                    } else {
+                        alert('AI modülü yüklenemedi. Lütfen sayfayı yenileyin.');
+                    }
                 }
                 
             } catch (e) {
                 console.error('AI Öneri hatası:', e);
-                alert('Öneri oluşturulurken bir hata oluştu.');
+                if (typeof RandevumUX !== 'undefined') {
+                    RandevumUX.error('Öneri oluşturulurken bir hata oluştu.');
+                } else {
+                    alert('Öneri oluşturulurken bir hata oluştu.');
+                }
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
@@ -2559,6 +2584,9 @@ Onayınızı bekliyorum. Teşekkürler!`;
     
     <!-- AI Recommendation Module -->
     <script src="/ai-recommendation.js"></script>
+    
+    <!-- UX Enhancements Module -->
+    <script src="/ux-enhancements.js"></script>
     
     <!-- Lightbox -->
     <div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightbox()">
