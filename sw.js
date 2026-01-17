@@ -1,23 +1,25 @@
-// Randevum Service Worker v2.0
-const CACHE_VERSION = 'v2.0';
+// Randevum Service Worker v3.1
+// Cache stratejisi: HTML/JS = Network Only, Diğer = Network First
+const CACHE_VERSION = 'v3.1';
 const CACHE_NAME = `randevum-${CACHE_VERSION}`;
 const OFFLINE_URL = '/offline.html';
 
-// Cache edilecek statik dosyalar
+// Cache edilecek statik dosyalar (sadece assets)
 const STATIC_ASSETS = [
-    '/',
-    '/index.html',
     '/offline.html',
-    '/styles.css',
-    '/config.js',
-    '/manifest.json',
-    '/berber/',
-    '/berber/index.html',
-    '/fiyatlandirma/',
-    '/fiyatlandirma/index.html',
     '/icons/icon-192x192.png',
     '/icons/icon-512x512.png',
     'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'
+];
+
+// ASLA cache'lenMEyecek dosyalar (her zaman network)
+const NEVER_CACHE = [
+    '.html',
+    '.js',
+    'index.html',
+    'ux-enhancements',
+    'config.js',
+    'sw.js'
 ];
 
 // Firebase ve API URL'leri - cache etme
@@ -93,7 +95,25 @@ self.addEventListener('fetch', (event) => {
     // Chrome extension requestleri için
     if (url.protocol === 'chrome-extension:') return;
     
-    // Strateji: Network First, Fallback to Cache
+    // HTML ve JS dosyaları için NETWORK ONLY (cache bypass)
+    const shouldBypassCache = NEVER_CACHE.some(ext => request.url.includes(ext));
+    
+    if (shouldBypassCache) {
+        event.respondWith(
+            fetch(request)
+                .catch(async () => {
+                    // Offline ise ve HTML isteği ise offline sayfası göster
+                    if (request.headers.get('accept')?.includes('text/html')) {
+                        const offlinePage = await caches.match(OFFLINE_URL);
+                        if (offlinePage) return offlinePage;
+                    }
+                    return new Response('Offline', { status: 503 });
+                })
+        );
+        return;
+    }
+    
+    // Diğer dosyalar için: Network First, Fallback to Cache
     event.respondWith(
         fetch(request)
             .then((response) => {
@@ -112,15 +132,6 @@ self.addEventListener('fetch', (event) => {
                 
                 if (cachedResponse) {
                     return cachedResponse;
-                }
-                
-                // HTML isteği ise offline sayfası göster
-                if (request.headers.get('accept')?.includes('text/html')) {
-                    const offlinePage = await caches.match(OFFLINE_URL);
-                    if (offlinePage) return offlinePage;
-                    
-                    // Offline sayfası da yoksa ana sayfayı dene
-                    return caches.match('/');
                 }
                 
                 // Diğer istekler için boş response
