@@ -41,6 +41,7 @@
             <nav class="nav desktop-nav">
                 <a href="/berber/" class="nav-link">💈 Berberler</a>
                 <a href="/berber/kayit/" class="nav-link highlight">Salonunu Ekle</a>
+                <a href="#" onclick="showLoginModal(); return false;" class="nav-link">🔑 Giriş</a>
             </nav>
             <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
         </div>
@@ -56,6 +57,7 @@
             <a href="/">🏠 Ana Sayfa</a>
             <a href="/berber/">💈 Berber Bul</a>
             <a href="/berber/kayit/" class="highlight">➕ Salonunu Ekle</a>
+            <a href="#" onclick="showLoginModal(); toggleMobileMenu(); return false;">🔑 Giriş Yap</a>
             <a href="#" onclick="installPWA(); toggleMobileMenu(); return false;" id="mobileInstallBtn" style="display: none;">📲 Uygulamayı İndir</a>
         </nav>
     </div>
@@ -279,6 +281,32 @@
     <!-- Mobile Menu Overlay -->
     <div id="mobileMenuOverlay" class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
     
+    <!-- Login Modal -->
+    <div id="loginModal" class="login-modal-overlay">
+        <div class="login-modal">
+            <div class="login-modal-header">
+                <h3>🔑 Salon Girişi</h3>
+                <button class="login-modal-close" onclick="closeLoginModal()">×</button>
+            </div>
+            <div class="login-modal-body">
+                <p class="login-modal-desc">Yönetim panelinize erişmek için giriş yapın</p>
+                <form onsubmit="handleLogin(event)">
+                    <div class="login-form-group">
+                        <label>Telefon Numarası</label>
+                        <input type="tel" id="loginPhone" placeholder="05XX XXX XX XX" required>
+                    </div>
+                    <div class="login-form-group">
+                        <label>PIN Kodu</label>
+                        <input type="password" id="loginPin" placeholder="4-6 haneli PIN" maxlength="6" required>
+                    </div>
+                    <p id="loginError" class="login-error"></p>
+                    <button type="submit" class="login-btn">Giriş Yap</button>
+                </form>
+                <p class="login-register-link">Henüz salonunuz yok mu? <a href="/berber/kayit/">Ücretsiz Kayıt Ol</a></p>
+            </div>
+        </div>
+    </div>
+    
     <!-- Firebase & Push Notification Scripts -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -363,6 +391,82 @@
             localStorage.setItem('pwa-dismiss-count', '999');
             const mobileInstallBtn = document.getElementById('mobileInstallBtn');
             if (mobileInstallBtn) mobileInstallBtn.style.display = 'none';
+        });
+        
+        // ========== LOGIN MODAL ==========
+        function showLoginModal() {
+            document.getElementById('loginModal').classList.add('active');
+        }
+        
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.remove('active');
+            document.getElementById('loginError').classList.remove('show');
+            document.getElementById('loginPhone').value = '';
+            document.getElementById('loginPin').value = '';
+        }
+        
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const phone = document.getElementById('loginPhone').value.replace(/\D/g, '').slice(-10);
+            const pin = document.getElementById('loginPin').value;
+            const errorEl = document.getElementById('loginError');
+            const btn = e.target.querySelector('button[type="submit"]');
+            
+            if (phone.length < 10 || pin.length < 4) {
+                errorEl.textContent = 'Geçerli telefon ve PIN girin';
+                errorEl.classList.add('show');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = 'Giriş yapılıyor...';
+            errorEl.classList.remove('show');
+            
+            try {
+                // Firebase'den salon bul
+                const db = firebase.firestore();
+                const snapshot = await db.collection('salons')
+                    .where('phone', '==', phone)
+                    .limit(1)
+                    .get();
+                
+                if (snapshot.empty) {
+                    // Personel girişi dene
+                    const staffSnapshot = await db.collection('salons')
+                        .where('staff', 'array-contains', { phone: phone })
+                        .limit(1)
+                        .get();
+                    
+                    if (staffSnapshot.empty) {
+                        throw new Error('Bu telefon numarası ile kayıtlı salon bulunamadı');
+                    }
+                }
+                
+                const salon = snapshot.docs[0]?.data();
+                
+                if (salon && salon.pin !== pin) {
+                    throw new Error('PIN kodu hatalı');
+                }
+                
+                // Başarılı - yönetim paneline yönlendir
+                const slug = salon?.slug || snapshot.docs[0]?.id;
+                window.location.href = `/berber/salon/yonetim/?slug=${slug}`;
+                
+            } catch (error) {
+                errorEl.textContent = error.message || 'Giriş başarısız';
+                errorEl.classList.add('show');
+                btn.disabled = false;
+                btn.textContent = 'Giriş Yap';
+            }
+        }
+        
+        // ESC ile modal kapat
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeLoginModal();
+                toggleMobileMenu();
+            }
         });
     </script>
 </body>
