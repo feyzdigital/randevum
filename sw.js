@@ -1,6 +1,6 @@
-// Randevum Service Worker v3.1
+// Randevum Service Worker v3.2
 // Cache stratejisi: HTML/JS = Network Only, Diğer = Network First
-const CACHE_VERSION = 'v3.1';
+const CACHE_VERSION = 'v3.2';
 const CACHE_NAME = `randevum-${CACHE_VERSION}`;
 const OFFLINE_URL = '/offline.html';
 
