@@ -2450,14 +2450,14 @@
     <!-- Notification Choice Modal -->
     <div id="notificationModal" class="modal-overlay">
         <div class="modal" style="max-width: 400px;">
-            <div class="modal-header" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
-                <h3 class="modal-title">✅ Randevu Onaylandı!</h3>
+            <div class="modal-header" id="notifyModalHeader" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
+                <h3 class="modal-title" id="notifyModalTitle">✅ Randevu Onaylandı</h3>
                 <button class="modal-close" onclick="closeNotificationModal()" style="color: white;">×</button>
             </div>
             <div class="modal-body" style="text-align: center; padding: 2rem;">
                 <div style="margin-bottom: 1.5rem;">
-                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">📱</div>
-                    <p style="color: var(--slate-600); font-size: 0.95rem;">Müşteriye WhatsApp ile bildirim göndermek ister misiniz?</p>
+                    <div id="notifyModalIcon" style="width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 2rem; background: linear-gradient(135deg, #10b981, #059669); color: white;">✅</div>
+                    <p id="notifyModalMessage" style="color: var(--slate-600); font-size: 0.95rem;">Müşteriye WhatsApp ile onay bildirimi göndermek ister misiniz?</p>
                 </div>
                 
                 <div style="background: var(--slate-50); border-radius: var(--radius); padding: 1rem; text-align: left; margin-bottom: 1rem;">
@@ -2466,11 +2466,11 @@
                     <div style="font-size: 0.85rem; color: var(--slate-500); margin-top: 0.25rem;" id="notifyAppointmentInfo">-</div>
                 </div>
                 
-                <p style="font-size: 0.8rem; color: var(--slate-400); margin-bottom: 0;">💡 E-postadan zaten mesaj attıysanız tekrar göndermenize gerek yok.</p>
+                <p style="font-size: 0.8rem; color: var(--warning); margin-bottom: 0; background: var(--warning-light); padding: 0.5rem; border-radius: 6px;">⚠️ Müşterinin haberi olması için bildirim göndermeniz önerilir.</p>
             </div>
             <div class="modal-footer" style="justify-content: center; gap: 1rem;">
-                <button class="btn" onclick="sendWhatsAppFromModal()" style="background: #25D366; color: white; display: flex; align-items: center; gap: 0.5rem;">
-                    <span>📲</span> WhatsApp Gönder
+                <button class="btn btn-success" id="notifySendBtn" onclick="sendWhatsAppFromModal()" style="display: flex; align-items: center; gap: 0.5rem;">
+                    📱 Onay Mesajı Gönder
                 </button>
                 <button class="btn btn-outline" onclick="closeNotificationModal()">Hayır, Kapat</button>
             </div>
@@ -3097,11 +3097,10 @@
                 
                 // Onaylandıysa WhatsApp seçeneği sun
                 if (status === 'confirmed' && apt) {
-                    showNotificationModal(apt);
+                    showNotificationModal(apt, 'confirmed');
                 } else if (status === 'cancelled' && apt) {
-                    // İptal için direkt WhatsApp aç
-                    sendStatusNotification(apt, status);
-                    showToast('Randevu iptal edildi', 'success');
+                    // İptal için de modal göster
+                    showNotificationModal(apt, 'cancelled');
                 } else {
                     showToast('Randevu güncellendi', 'success');
                 }
@@ -3113,37 +3112,65 @@
         }
         
         // Show notification choice modal
-        function showNotificationModal(apt) {
+        function showNotificationModal(apt, status = 'confirmed') {
             const modal = document.getElementById('notificationModal');
             const customerName = document.getElementById('notifyCustomerName');
             const customerPhone = document.getElementById('notifyCustomerPhone');
             const appointmentInfo = document.getElementById('notifyAppointmentInfo');
+            const modalTitle = document.getElementById('notifyModalTitle');
+            const modalIcon = document.getElementById('notifyModalIcon');
+            const modalMessage = document.getElementById('notifyModalMessage');
+            const sendBtn = document.getElementById('notifySendBtn');
             
             customerName.textContent = apt.customerName;
             customerPhone.textContent = '0' + apt.customerPhone;
             appointmentInfo.textContent = `${formatDateDisplay(apt.date)} - ${apt.time} - ${apt.service}`;
             
-            // Store apt for later use
+            // Status'a göre modal içeriğini değiştir
+            const modalHeader = document.getElementById('notifyModalHeader');
+            if (status === 'confirmed') {
+                modalTitle.textContent = '✅ Randevu Onaylandı';
+                modalHeader.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                modalIcon.innerHTML = '✅';
+                modalIcon.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                modalMessage.textContent = 'Müşteriye WhatsApp ile onay bildirimi göndermek ister misiniz?';
+                sendBtn.textContent = '📱 Onay Mesajı Gönder';
+                sendBtn.className = 'btn btn-success';
+            } else {
+                modalTitle.textContent = '❌ Randevu İptal Edildi';
+                modalHeader.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                modalIcon.innerHTML = '❌';
+                modalIcon.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                modalMessage.textContent = 'Müşteriye WhatsApp ile iptal bildirimi göndermek ister misiniz?';
+                sendBtn.textContent = '📱 İptal Mesajı Gönder';
+                sendBtn.className = 'btn btn-danger';
+            }
+            
+            // Store apt and status for later use
             modal.dataset.aptId = apt.id;
+            modal.dataset.status = status;
             modal.classList.add('active');
         }
         
         function closeNotificationModal() {
-            document.getElementById('notificationModal').classList.remove('active');
-            showToast('Randevu onaylandı', 'success');
+            const modal = document.getElementById('notificationModal');
+            const status = modal.dataset.status || 'confirmed';
+            modal.classList.remove('active');
+            showToast(status === 'confirmed' ? 'Randevu onaylandı' : 'Randevu iptal edildi', 'success');
         }
         
         function sendWhatsAppFromModal() {
             const modal = document.getElementById('notificationModal');
             const aptId = modal.dataset.aptId;
+            const status = modal.dataset.status || 'confirmed';
             const apt = appointments.find(a => a.id === aptId);
             
             if (apt) {
-                sendStatusNotification(apt, 'confirmed');
+                sendStatusNotification(apt, status);
             }
             
             modal.classList.remove('active');
-            showToast('Randevu onaylandı', 'success');
+            showToast(status === 'confirmed' ? 'Randevu onaylandı' : 'Randevu iptal edildi', 'success');
         }
         
         // Send Status Notification via WhatsApp
