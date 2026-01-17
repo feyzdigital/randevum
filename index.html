@@ -353,31 +353,52 @@
             try {
                 // Firebase'den salon bul
                 const db = firebase.firestore();
-                const snapshot = await db.collection('salons')
-                    .where('phone', '==', phone)
+                
+                // Telefon formatları: 5XXXXXXXXX (10 hane) ve 05XXXXXXXXX (11 hane)
+                const phone10 = phone.slice(-10); // Son 10 hane
+                const phone11 = '0' + phone10; // Başına 0 ekle
+                
+                // Önce phone field'ı ile dene
+                let snapshot = await db.collection('salons')
+                    .where('phone', '==', phone11)
                     .limit(1)
                     .get();
                 
+                // Bulunamadıysa 10 haneli dene
                 if (snapshot.empty) {
-                    // Personel girişi dene
-                    const staffSnapshot = await db.collection('salons')
-                        .where('staff', 'array-contains', { phone: phone })
+                    snapshot = await db.collection('salons')
+                        .where('phone', '==', phone10)
                         .limit(1)
                         .get();
-                    
-                    if (staffSnapshot.empty) {
-                        throw new Error('Bu telefon numarası ile kayıtlı salon bulunamadı');
-                    }
                 }
                 
-                const salon = snapshot.docs[0]?.data();
+                // Hala bulunamadıysa mobilePhone ile dene
+                if (snapshot.empty) {
+                    snapshot = await db.collection('salons')
+                        .where('mobilePhone', '==', phone11)
+                        .limit(1)
+                        .get();
+                }
                 
-                if (salon && salon.pin !== pin) {
+                if (snapshot.empty) {
+                    snapshot = await db.collection('salons')
+                        .where('mobilePhone', '==', phone10)
+                        .limit(1)
+                        .get();
+                }
+                
+                if (snapshot.empty) {
+                    throw new Error('Bu telefon numarası ile kayıtlı salon bulunamadı');
+                }
+                
+                const salon = snapshot.docs[0].data();
+                
+                if (salon.pin !== pin) {
                     throw new Error('PIN kodu hatalı');
                 }
                 
                 // Başarılı - yönetim paneline yönlendir
-                const slug = salon?.slug || snapshot.docs[0]?.id;
+                const slug = salon.slug || snapshot.docs[0].id;
                 window.location.href = `/berber/salon/yonetim/?slug=${slug}`;
                 
             } catch (error) {
