@@ -6,6 +6,9 @@
     <title>Randevum - Online Randevu Sistemi</title>
     <meta name="description" content="Berber, kuaför ve güzellik salonları için online randevu sistemi. Kolayca randevu al, sıra bekleme!">
     
+    <!-- PWA Install Prompt - En erken yakala -->
+    <script>window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();window.__pwaPrompt=e;console.log('[PWA] Prompt yakalandı')});</script>
+    
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#6366f1">
     <meta name="apple-mobile-web-app-capable" content="yes">
