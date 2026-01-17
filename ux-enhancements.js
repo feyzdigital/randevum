@@ -448,13 +448,23 @@ const RandevumUX = {
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
         if (isStandalone) {
             console.log('[UX] PWA zaten yüklü');
+            // Bottom nav'dan yükle butonunu gizle
+            const installBtn = document.getElementById('bottomNavInstall');
+            if (installBtn) installBtn.style.display = 'none';
             return;
         }
         
-        // Android/Desktop için beforeinstallprompt
+        // Global'de yakalanmış prompt var mı?
+        if (window.__pwaPrompt) {
+            this.deferredPrompt = window.__pwaPrompt;
+            console.log('[UX] PWA prompt global\'den alındı');
+        }
+        
+        // Android/Desktop için beforeinstallprompt (henüz yakalanmadıysa)
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             this.deferredPrompt = e;
+            window.__pwaPrompt = e;
             console.log('[UX] PWA kuruluma hazır');
             
             // Banner göster (ilk ziyarette)
@@ -470,10 +480,12 @@ const RandevumUX = {
             this.success('Uygulama yüklendi! 🎉');
             localStorage.setItem('pwa-dismiss-count', '999');
             this.hidePWABanner();
+            this.deferredPrompt = null;
+            window.__pwaPrompt = null;
             
             // Bottom nav'dan yükle butonunu kaldır
             const installBtn = document.getElementById('bottomNavInstall');
-            if (installBtn) installBtn.remove();
+            if (installBtn) installBtn.style.display = 'none';
         });
     },
     
@@ -486,15 +498,19 @@ const RandevumUX = {
             return;
         }
         
+        // Global'den prompt'u al
+        const prompt = this.deferredPrompt || window.__pwaPrompt;
+        
         if (isIOS) {
             this.showIOSInstallGuide();
-        } else if (this.deferredPrompt) {
-            this.deferredPrompt.prompt();
-            this.deferredPrompt.userChoice.then((result) => {
+        } else if (prompt) {
+            prompt.prompt();
+            prompt.userChoice.then((result) => {
                 if (result.outcome === 'accepted') {
                     localStorage.setItem('pwa-dismiss-count', '999');
                 }
                 this.deferredPrompt = null;
+                window.__pwaPrompt = null;
             });
         } else {
             // Chrome'da beforeinstallprompt henüz tetiklenmediyse
@@ -1166,6 +1182,13 @@ const RandevumUX = {
 window.RandevumUX = RandevumUX;
 window.showToast = (msg, type) => RandevumUX.showToast(msg, type);
 
+// PWA: beforeinstallprompt'u HEMEN yakala (modül yüklenmeden önce gelebilir)
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    window.__pwaPrompt = e; // Global'de sakla
+    console.log('[PWA] Install prompt yakalandı');
+});
+
 // Başlat
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => RandevumUX.init());
@@ -1173,4 +1196,4 @@ if (document.readyState === 'loading') {
     RandevumUX.init();
 }
 
-console.log('[UX] Modül yüklendi v2.0');
+console.log('[UX] Modül yüklendi v2.1');
