@@ -73,11 +73,223 @@
             color: var(--slate-900);
         }
         
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
         .back-btn {
             color: var(--slate-500);
             text-decoration: none;
             font-size: 0.9rem;
             font-weight: 500;
+        }
+        
+        .menu-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            color: var(--slate-600);
+        }
+        
+        .desktop-only { display: block; }
+        
+        @media (max-width: 600px) {
+            .desktop-only { display: none; }
+        }
+        
+        /* Mobile Menu */
+        .salon-mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -280px;
+            width: 280px;
+            height: 100%;
+            background: white;
+            z-index: 1001;
+            transition: right 0.3s ease;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .salon-mobile-menu.active {
+            right: 0;
+        }
+        
+        .salon-menu-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            border-bottom: 1px solid var(--slate-200);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .salon-menu-header button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--slate-500);
+        }
+        
+        .salon-menu-nav {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .salon-menu-nav a {
+            padding: 1rem;
+            text-decoration: none;
+            color: var(--slate-700);
+            font-weight: 500;
+            border-bottom: 1px solid var(--slate-100);
+            transition: background 0.2s;
+        }
+        
+        .salon-menu-nav a:hover {
+            background: var(--slate-50);
+        }
+        
+        .salon-menu-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        .salon-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Login Modal */
+        .salon-login-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        .salon-login-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .salon-login-content {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        }
+        
+        .salon-login-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--slate-200);
+        }
+        
+        .salon-login-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        
+        .salon-login-header button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--slate-400);
+        }
+        
+        .salon-login-body {
+            padding: 1.5rem;
+        }
+        
+        .salon-login-body > p {
+            text-align: center;
+            color: var(--slate-500);
+            font-size: 0.9rem;
+            margin-bottom: 1.25rem;
+        }
+        
+        .salon-login-field {
+            margin-bottom: 1rem;
+        }
+        
+        .salon-login-field label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--slate-700);
+            margin-bottom: 0.4rem;
+        }
+        
+        .salon-login-field input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--slate-200);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        
+        .salon-login-field input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .salon-login-error {
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+            min-height: 1.2em;
+        }
+        
+        .salon-login-btn {
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        
+        .salon-login-btn:disabled {
+            opacity: 0.7;
+        }
+        
+        .salon-login-register {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--slate-500);
+            margin-top: 1rem;
+        }
+        
+        .salon-login-register a {
+            color: var(--primary);
+            font-weight: 500;
+            text-decoration: none;
         }
         
         /* Loading & Error */
@@ -1402,8 +1614,52 @@
 <body>
     <header class="header">
         <a href="/" class="logo">💈 Randevum</a>
-        <a href="/berber/" class="back-btn">← Berberlere Dön</a>
+        <div class="header-right">
+            <a href="/berber/" class="back-btn desktop-only">← Berberlere Dön</a>
+            <button class="menu-btn" onclick="toggleSalonMenu()">☰</button>
+        </div>
     </header>
+    
+    <!-- Mobile Menu -->
+    <div id="salonMobileMenu" class="salon-mobile-menu">
+        <div class="salon-menu-header">
+            <span>💈 Randevum</span>
+            <button onclick="toggleSalonMenu()">✕</button>
+        </div>
+        <nav class="salon-menu-nav">
+            <a href="/">🏠 Ana Sayfa</a>
+            <a href="/berber/">💈 Berber Bul</a>
+            <a href="/berber/kayit/">➕ Salonunu Ekle</a>
+            <a href="#" onclick="showSalonLoginModal(); toggleSalonMenu(); return false;">🔑 Giriş Yap</a>
+        </nav>
+    </div>
+    <div id="salonMenuOverlay" class="salon-menu-overlay" onclick="toggleSalonMenu()"></div>
+    
+    <!-- Login Modal -->
+    <div id="salonLoginModal" class="salon-login-modal">
+        <div class="salon-login-content">
+            <div class="salon-login-header">
+                <h3>🔑 Salon Girişi</h3>
+                <button onclick="closeSalonLoginModal()">×</button>
+            </div>
+            <div class="salon-login-body">
+                <p>Yönetim panelinize erişmek için giriş yapın</p>
+                <form onsubmit="handleSalonLogin(event)">
+                    <div class="salon-login-field">
+                        <label>Telefon Numarası</label>
+                        <input type="tel" id="salonLoginPhone" placeholder="05XX XXX XX XX" required>
+                    </div>
+                    <div class="salon-login-field">
+                        <label>PIN Kodu</label>
+                        <input type="password" id="salonLoginPin" placeholder="4-6 haneli PIN" maxlength="6" required>
+                    </div>
+                    <p id="salonLoginError" class="salon-login-error"></p>
+                    <button type="submit" class="salon-login-btn">Giriş Yap</button>
+                </form>
+                <p class="salon-login-register">Henüz salonunuz yok mu? <a href="/berber/kayit/">Ücretsiz Kayıt Ol</a></p>
+            </div>
+        </div>
+    </div>
     
     <div id="loadingState" class="loading">
         <div class="spinner"></div>
@@ -1736,6 +1992,65 @@
         const MONTHS_TR = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
         const MONTHS_FULL = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
         const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+        
+        // ========== MOBİL MENÜ ==========
+        function toggleSalonMenu() {
+            document.getElementById('salonMobileMenu').classList.toggle('active');
+            document.getElementById('salonMenuOverlay').classList.toggle('active');
+            document.body.style.overflow = document.getElementById('salonMobileMenu').classList.contains('active') ? 'hidden' : '';
+        }
+        
+        // ========== GİRİŞ MODAL ==========
+        function showSalonLoginModal() {
+            const modal = document.getElementById('salonLoginModal');
+            if (modal) modal.classList.add('active');
+        }
+        
+        function closeSalonLoginModal() {
+            const modal = document.getElementById('salonLoginModal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.getElementById('salonLoginError').textContent = '';
+            }
+        }
+        
+        async function handleSalonLogin(e) {
+            e.preventDefault();
+            
+            const phone = document.getElementById('salonLoginPhone').value.replace(/\D/g, '').slice(-10);
+            const pin = document.getElementById('salonLoginPin').value;
+            const errorEl = document.getElementById('salonLoginError');
+            const btn = e.target.querySelector('button[type="submit"]');
+            
+            btn.disabled = true;
+            btn.textContent = 'Giriş yapılıyor...';
+            errorEl.textContent = '';
+            
+            try {
+                const snapshot = await db.collection('salons')
+                    .where('phone', '==', phone)
+                    .limit(1)
+                    .get();
+                
+                if (snapshot.empty) {
+                    throw new Error('Bu telefon ile kayıtlı salon bulunamadı');
+                }
+                
+                const salonData = snapshot.docs[0].data();
+                
+                if (salonData.pin !== pin) {
+                    throw new Error('PIN kodu hatalı');
+                }
+                
+                const slug = salonData.slug || snapshot.docs[0].id;
+                window.location.href = `/berber/salon/yonetim/?slug=${slug}`;
+                
+            } catch (error) {
+                errorEl.textContent = error.message;
+                btn.disabled = false;
+                btn.textContent = 'Giriş Yap';
+            }
+        }
         
         async function init() {
             if (typeof firebase === 'undefined') { setTimeout(init, 100); return; }
