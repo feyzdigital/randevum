@@ -821,3 +821,154 @@ body {
         flex: 1;
     }
 }
+
+/* ===== LOGIN MODAL ===== */
+.login-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+}
+
+.login-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.login-modal {
+    background: white;
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 400px;
+    box-shadow: var(--shadow-xl);
+    transform: translateY(-20px);
+    transition: transform 0.3s;
+}
+
+.login-modal-overlay.active .login-modal {
+    transform: translateY(0);
+}
+
+.login-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--slate-200);
+}
+
+.login-modal-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.login-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--slate-400);
+    cursor: pointer;
+    line-height: 1;
+}
+
+.login-modal-close:hover {
+    color: var(--slate-600);
+}
+
+.login-modal-body {
+    padding: 1.5rem;
+}
+
+.login-modal-desc {
+    text-align: center;
+    color: var(--slate-500);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.login-form-group {
+    margin-bottom: 1rem;
+}
+
+.login-form-group label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--slate-700);
+    margin-bottom: 0.5rem;
+}
+
+.login-form-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--slate-200);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.login-form-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.login-error {
+    color: var(--danger);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    display: none;
+}
+
+.login-error.show {
+    display: block;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 0.875rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.login-btn:hover {
+    background: var(--primary-dark);
+}
+
+.login-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.login-register-link {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--slate-500);
+    margin-top: 1.25rem;
+}
+
+.login-register-link a {
+    color: var(--primary);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.login-register-link a:hover {
+    text-decoration: underline;
+}
