@@ -149,6 +149,9 @@ const RandevumUX = {
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
         
+        // Uygulama zaten yüklüyse veya PWA olarak açıldıysa "Yükle" butonunu gösterme
+        const showInstallBtn = !isStandalone;
+        
         const nav = document.createElement('nav');
         nav.id = 'bottomNav';
         nav.className = 'bottom-nav';
@@ -169,7 +172,7 @@ const RandevumUX = {
                 <span class="bottom-nav-icon">❤️</span>
                 <span class="bottom-nav-label">Favoriler</span>
             </a>
-            ${!isStandalone ? `
+            ${showInstallBtn ? `
             <a href="#" onclick="RandevumUX.showInstallPrompt(); return false;" class="bottom-nav-item" id="bottomNavInstall">
                 <span class="bottom-nav-icon">📲</span>
                 <span class="bottom-nav-label">Yükle</span>
@@ -179,6 +182,24 @@ const RandevumUX = {
         
         document.body.appendChild(nav);
         document.body.style.paddingBottom = '70px';
+        
+        // Eğer zaten yüklüyse (prompt gelmeyecekse) birkaç saniye sonra kontrol et
+        if (showInstallBtn) {
+            setTimeout(() => {
+                const prompt = this.deferredPrompt || window.__pwaPrompt;
+                if (!prompt) {
+                    // Prompt yok, muhtemelen zaten yüklü - butonu "Yüklü" yap
+                    const installBtn = document.getElementById('bottomNavInstall');
+                    if (installBtn) {
+                        installBtn.innerHTML = `
+                            <span class="bottom-nav-icon">✅</span>
+                            <span class="bottom-nav-label">Yüklü</span>
+                        `;
+                        installBtn.style.opacity = '0.6';
+                    }
+                }
+            }, 3000);
+        }
     },
 
     // ==================== 4. FAVORİ SALONLAR ====================
@@ -493,8 +514,9 @@ const RandevumUX = {
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
         
+        // Zaten PWA olarak açılmışsa
         if (isStandalone) {
-            this.info('Uygulama zaten yüklü! 📱');
+            this.success('Uygulamayı zaten kullanıyorsunuz! 🎉');
             return;
         }
         
@@ -504,18 +526,44 @@ const RandevumUX = {
         if (isIOS) {
             this.showIOSInstallGuide();
         } else if (prompt) {
+            // Native Chrome prompt göster
             prompt.prompt();
             prompt.userChoice.then((result) => {
                 if (result.outcome === 'accepted') {
                     localStorage.setItem('pwa-dismiss-count', '999');
+                    this.success('Uygulama yükleniyor! 🎉');
                 }
                 this.deferredPrompt = null;
                 window.__pwaPrompt = null;
             });
         } else {
-            // Chrome'da beforeinstallprompt henüz tetiklenmediyse
-            this.showGenericInstallGuide();
+            // Prompt yok - muhtemelen zaten yüklü veya desteklenmiyor
+            this.showAlreadyInstalledOrUnsupported();
         }
+    },
+    
+    showAlreadyInstalledOrUnsupported() {
+        const modal = document.createElement('div');
+        modal.className = 'ux-modal-overlay';
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+        
+        modal.innerHTML = `
+            <div class="ux-modal">
+                <div class="ux-modal-header">
+                    <h3>📲 Uygulama Durumu</h3>
+                    <button class="ux-modal-close" onclick="this.closest('.ux-modal-overlay').remove()">×</button>
+                </div>
+                <div class="ux-modal-body" style="text-align: center; padding: 24px;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
+                    <p style="font-size: 16px; color: #334155; margin-bottom: 12px;"><strong>Uygulama zaten yüklü!</strong></p>
+                    <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Ana ekranınızda "Randevum" ikonunu arayın veya uygulama çekmecenize bakın.</p>
+                    <button class="ux-btn-primary" onclick="this.closest('.ux-modal-overlay').remove()" style="width: 100%;">Tamam</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        setTimeout(() => modal.classList.add('active'), 10);
     },
     
     showIOSInstallGuide() {
@@ -564,33 +612,6 @@ const RandevumUX = {
                         <p>💡 Bu işlem sonrasında Randevum ana ekranınızda bir uygulama gibi görünecek!</p>
                     </div>
                     <button class="ux-btn-primary ios-done-btn" onclick="this.closest('.ux-modal-overlay').remove()">Anladım</button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        setTimeout(() => modal.classList.add('active'), 10);
-    },
-    
-    showGenericInstallGuide() {
-        const modal = document.createElement('div');
-        modal.className = 'ux-modal-overlay';
-        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-        
-        modal.innerHTML = `
-            <div class="ux-modal">
-                <div class="ux-modal-header">
-                    <h3>📲 Uygulamayı Yükle</h3>
-                    <button class="ux-modal-close" onclick="this.closest('.ux-modal-overlay').remove()">×</button>
-                </div>
-                <div class="ux-modal-body">
-                    <div class="generic-install-guide">
-                        <p>Tarayıcınızın adres çubuğundaki <strong>yükle simgesine</strong> tıklayın veya menüden <strong>"Uygulamayı yükle"</strong> seçeneğini bulun.</p>
-                        <div class="generic-install-img">
-                            <span>⋮</span> → <span>📲 Yükle</span>
-                        </div>
-                    </div>
-                    <button class="ux-btn-primary" onclick="this.closest('.ux-modal-overlay').remove()">Tamam</button>
                 </div>
             </div>
         `;
