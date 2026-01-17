@@ -1313,16 +1313,27 @@
             errorEl.style.display = 'none';
             
             try {
-                // Önce telefon ile ara - hem 10 hem 11 haneli dene
+                // Telefon formatları: 5XXXXXXXXX (10 hane) ve 05XXXXXXXXX (11 hane)
                 const phone10 = phone.slice(-10);
                 const phone11 = '0' + phone10;
                 
-                let snapshot = await db.collection('salons')
-                    .where('mobilePhone', '==', phone10)
+                let snapshot = null;
+                
+                // 1. phone field ile 11 haneli dene
+                snapshot = await db.collection('salons')
+                    .where('phone', '==', phone11)
                     .where('active', '==', true)
                     .get();
                 
-                // 10 haneli bulunamadıysa 11 haneli dene
+                // 2. phone field ile 10 haneli dene
+                if (snapshot.empty) {
+                    snapshot = await db.collection('salons')
+                        .where('phone', '==', phone10)
+                        .where('active', '==', true)
+                        .get();
+                }
+                
+                // 3. mobilePhone field ile 11 haneli dene
                 if (snapshot.empty) {
                     snapshot = await db.collection('salons')
                         .where('mobilePhone', '==', phone11)
@@ -1330,8 +1341,16 @@
                         .get();
                 }
                 
+                // 4. mobilePhone field ile 10 haneli dene
                 if (snapshot.empty) {
-                    errorEl.textContent = 'Bu telefon numarasına kayıtlı salon bulunamadı';
+                    snapshot = await db.collection('salons')
+                        .where('mobilePhone', '==', phone10)
+                        .where('active', '==', true)
+                        .get();
+                }
+                
+                if (snapshot.empty) {
+                    errorEl.textContent = 'Bu telefon numarasına kayıtlı aktif salon bulunamadı';
                     errorEl.style.display = 'block';
                 } else {
                     // Salon bulundu, PIN kontrolü yap
@@ -1341,7 +1360,6 @@
                     if (salon.pin === pin) {
                         // PIN doğru, yönlendir
                         const slug = salon.slug;
-                        const category = salon.category || 'berber';
                         window.location.href = `/berber/salon/yonetim/?slug=${slug}`;
                     } else {
                         errorEl.textContent = 'PIN kodu hatalı';
