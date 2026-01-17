@@ -700,7 +700,22 @@ const RandevumUX = {
         // iOS için PWA banner (ilk ziyarette)
         this.checkIOSFirstVisit();
         
+        // PWA olarak açıldıysa install butonlarını gizle
+        this.hideInstallButtonsIfStandalone();
+        
         console.log('[UX] Modül hazır ✓');
+    },
+    
+    hideInstallButtonsIfStandalone() {
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        
+        if (isStandalone) {
+            // .pwa-hide-when-installed class'ına sahip tüm elementleri gizle
+            document.querySelectorAll('.pwa-hide-when-installed, #mobileInstallBtn, #bottomNavInstall').forEach(el => {
+                el.style.display = 'none';
+            });
+            console.log('[UX] PWA modunda - install butonları gizlendi');
+        }
     },
     
     checkIOSFirstVisit() {
