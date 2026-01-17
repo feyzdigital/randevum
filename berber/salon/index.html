@@ -2020,7 +2020,9 @@
         async function handleSalonLogin(e) {
             e.preventDefault();
             
-            const phone = document.getElementById('salonLoginPhone').value.replace(/\D/g, '').slice(-10);
+            const phoneRaw = document.getElementById('salonLoginPhone').value.replace(/\D/g, '');
+            const phone10 = phoneRaw.slice(-10);
+            const phone11 = '0' + phone10;
             const pin = document.getElementById('salonLoginPin').value;
             const errorEl = document.getElementById('salonLoginError');
             const btn = e.target.querySelector('button[type="submit"]');
@@ -2030,10 +2032,37 @@
             errorEl.textContent = '';
             
             try {
-                const snapshot = await db.collection('salons')
-                    .where('phone', '==', phone)
+                let snapshot = null;
+                
+                // 1. phone field ile 11 haneli
+                snapshot = await db.collection('salons')
+                    .where('phone', '==', phone11)
                     .limit(1)
                     .get();
+                
+                // 2. phone field ile 10 haneli
+                if (snapshot.empty) {
+                    snapshot = await db.collection('salons')
+                        .where('phone', '==', phone10)
+                        .limit(1)
+                        .get();
+                }
+                
+                // 3. mobilePhone field ile 11 haneli
+                if (snapshot.empty) {
+                    snapshot = await db.collection('salons')
+                        .where('mobilePhone', '==', phone11)
+                        .limit(1)
+                        .get();
+                }
+                
+                // 4. mobilePhone field ile 10 haneli
+                if (snapshot.empty) {
+                    snapshot = await db.collection('salons')
+                        .where('mobilePhone', '==', phone10)
+                        .limit(1)
+                        .get();
+                }
                 
                 if (snapshot.empty) {
                     throw new Error('Bu telefon ile kayıtlı salon bulunamadı');
